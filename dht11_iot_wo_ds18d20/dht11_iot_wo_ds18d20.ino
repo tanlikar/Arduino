@@ -147,11 +147,11 @@ void gettemperature() {
   // if the difference between the current time and last time you read
   // the sensor is bigger than the interval you set, read the sensor
   // Works better than delay for things happening elsewhere also
-  unsigned long currentMillis = millis();
+ // unsigned long currentMillis = millis();
  
-  if(currentMillis - previousMillis >= interval) {
+  //if(currentMillis - previousMillis >= interval) {
     // save the last time you read the sensor 
-    previousMillis = currentMillis;   
+   // previousMillis = currentMillis;   
 
     // Reading temperature for humidity takes about 250 milliseconds!
     // Sensor readings may also be up to 2 seconds 'old' (it's a very slow sensor)
@@ -163,6 +163,6 @@ void gettemperature() {
       Serial.println("Failed to read from DHT sensor!");
       return;
     }
-  }
+  //}
 }
 
