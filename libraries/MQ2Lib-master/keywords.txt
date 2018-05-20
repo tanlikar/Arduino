@@ -1,0 +1,33 @@
+#######################################
+# Syntax Coloring Map For MQ2Lib
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+read  KEYWORD2
+readLPG  KEYWORD2
+readCO  KEYWORD2
+readSmoke  KEYWORD2
+begin  KEYWORD2
+#######################################
+# Instances (KEYWORD2)
+#######################################
+MQ2	 KEYWORD2
+#######################################
+# Constants (LITERAL1)
+#######################################
+MQ2_LPG  LITERAL1
+MQ2_CO  LITERAL1
+MQ2_SMOKE  LITERAL1
+MQ2_RL_VALUE  LITERAL1
+MQ2_RO_CLEAN_AIR_FACTOR  LITERAL1
+MQ2_CALIBARAION_SAMPLE_TIMES  LITERAL1
+MQ2_CALIBRATION_SAMPLE_INTERVAL  LITERAL1
+MQ2_READ_SAMPLE_TIMES  LITERAL1
+MQ2_READ_SAMPLE_INTERVAL  LITERAL1
+MQ2_READ_RATE  LITERAL1
