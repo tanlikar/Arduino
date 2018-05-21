@@ -88,12 +88,7 @@ float MQ135::getCorrectedResistance(float t, float h) {
 /**************************************************************************/
 float MQ135::getPPM() {
 
-	if(correction){
-		RZERO = getCorrectedRZero;
-	}
-	else{
-		RZERO = getRZero;
-	}
+		RZERO = getRZero();
   	return PARA * pow((getResistance()/RZERO), -PARB);
 }
 
@@ -109,12 +104,9 @@ float MQ135::getPPM() {
 */
 /**************************************************************************/
 float MQ135::getCorrectedPPM(float t, float h) {
-	if(correction){
-		RZERO = getCorrectedRZero;
-	}
-	else{
-		RZERO = getRZero;
-	}
+
+		RZERO = getCorrectedRZero(t, h);
+
   return PARA * pow((getCorrectedResistance(t, h)/RZERO), -PARB);
 }
 
@@ -144,7 +136,3 @@ float MQ135::getCorrectedRZero(float t, float h) {
   return getCorrectedResistance(t, h) * pow((ATMOCO2/PARA), (1./PARB));
 }
 
-void MQ135::corretion(bool c){
-
-	correction = c; 
-}

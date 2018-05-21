@@ -27,7 +27,6 @@ v1.0 - First release
 //#define RZERO 76.63 in kohm
 //#define RZERO 279.34
 float RZERO;
-bool correction = false;
 
 /// Parameters for calculating ppm of CO2 from sensor resistance
 #define PARA 116.6020682
@@ -58,6 +57,6 @@ class MQ135 {
   float getCorrectedPPM(float t, float h);
   float getRZero();
   float getCorrectedRZero(float t, float h);
-  bool  correction(bool c);
+
 };
 #endif
