@@ -17,7 +17,7 @@
 #define MQ2_SMOKE  2
 
 //other defines
-#define  MQ2_RL_VALUE  5     //define the load resistance on the board, in kilo Ohms
+#define  MQ2_RL_VALUE  5     //define the load resistance on the board, in kilo Ohms, ori =5
 #define  MQ2_RO_CLEAN_AIR_FACTOR  9.83
 #define  MQ2_CALIBARAION_SAMPLE_TIMES  5
 #define  MQ2_CALIBRATION_SAMPLE_INTERVAL  50
