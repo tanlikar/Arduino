@@ -24,8 +24,9 @@ v1.0 - First release
 */
 /**************************************************************************/
 
-MQ135::MQ135(uint8_t pin) {
+MQ135::MQ135(uint8_t pin, bool doSerial) {
   _pin = pin;
+  _serial = doSerial;
 }
 
 
@@ -88,8 +89,7 @@ float MQ135::getCorrectedResistance(float t, float h) {
 /**************************************************************************/
 float MQ135::getPPM() {
 
-		RZERO = getRZero();
-  	return PARA * pow((getResistance()/RZERO), -PARB);
+  return PARA * pow((getResistance()/RZERO), -PARB);
 }
 
 /**************************************************************************/
@@ -105,9 +105,7 @@ float MQ135::getPPM() {
 /**************************************************************************/
 float MQ135::getCorrectedPPM(float t, float h) {
 
-		RZERO = getCorrectedRZero(t, h);
-
-  return PARA * pow((getCorrectedResistance(t, h)/RZERO), -PARB);
+  return PARA * pow((getCorrectedResistance(t, h)/RZEROc), -PARB);
 }
 
 /**************************************************************************/
@@ -118,6 +116,7 @@ float MQ135::getCorrectedPPM(float t, float h) {
 */
 /**************************************************************************/
 float MQ135::getRZero() {
+ 
   return getResistance() * pow((ATMOCO2/PARA), (1./PARB));
 }
 
@@ -133,6 +132,45 @@ float MQ135::getRZero() {
 */
 /**************************************************************************/
 float MQ135::getCorrectedRZero(float t, float h) {
+
   return getCorrectedResistance(t, h) * pow((ATMOCO2/PARA), (1./PARB));
 }
 
+
+void MQ135::MQCalibration()
+{
+  temp1 = 0;
+
+  for (int i=0; i<MQ135_CALIBARAION_SAMPLE_TIMES; i++) //take multiple samples
+  {
+    temp1 += getResistance();
+    delay(MQ135_CALIBRATION_SAMPLE_INTERVAL);
+  }
+
+  temp1 = temp1/MQ135_CALIBARAION_SAMPLE_TIMES;    //calculate the average value
+
+  RZERO = temp1 * pow((ATMOCO2/PARA), (1./PARB));
+
+}
+
+void MQ135::MQCalibrationCorrection(float t, float h){
+
+  RZEROc = RZERO / getCorrectionFactor(t, h);
+  
+  if(_serial){
+    Serial.print(F("MQ135 corrected Ro: "));
+    Serial.print(RZEROc);
+    Serial.println(F(" kohm"));
+  }
+}
+
+void MQ135::begin()
+{
+  MQCalibration();
+  if (_serial)
+  {
+    Serial.print(F("MQ135 Ro: "));
+    Serial.print(RZERO);
+    Serial.println(F(" kohm"));
+  }
+}

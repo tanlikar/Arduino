@@ -11,28 +11,27 @@
 
 
 #define PIN_MQ135 A0
-MQ135 mq135_sensor = MQ135(PIN_MQ135);
+MQ135 mq135_sensor = MQ135(PIN_MQ135, true);
 
 float temperature = 21.0; // assume current temperature. Recommended to measure with DHT22
 float humidity = 25.0; // assume current humidity. Recommended to measure with DHT22
+float rzero ;
+float correctedRZero;
+float resistance ;
+float ppm ;
+float correctedPPM ;
 
 void setup() {
   Serial.begin(9600);
+  mq135_sensor.begin();
 }
 
 void loop() {
-  float rzero = mq135_sensor.getRZero();
-  float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-  float resistance = mq135_sensor.getResistance();
-  float ppm = mq135_sensor.getPPM();
-  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
 
-  Serial.print("MQ135 RZero: ");
-  Serial.print(rzero);
-  Serial.print("\t Corrected RZero: ");
-  Serial.print(correctedRZero);
-  Serial.print("\t Resistance: ");
-  Serial.print(resistance);
+  mq135_sensor.MQCalibrationCorrection( temperature, humidity);
+  ppm = mq135_sensor.getPPM();
+  correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+
   Serial.print("\t PPM: ");
   Serial.print(ppm);
   Serial.print("\t Corrected PPM: ");

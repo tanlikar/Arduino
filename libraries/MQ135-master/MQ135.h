@@ -21,13 +21,10 @@ v1.0 - First release
  #include "WProgram.h"
 #endif
 
-/// The load resistance on the board in kohm
+/// The load resistance on the board
 #define RLOAD 10.0
 /// Calibration resistance at atmospheric CO2 level
-//#define RZERO 76.63 in kohm
-//#define RZERO 279.34
-float RZERO;
-
+///#define RZERO 76.63
 /// Parameters for calculating ppm of CO2 from sensor resistance
 #define PARA 116.6020682
 #define PARB 2.769034857
@@ -44,12 +41,21 @@ float RZERO;
 /// Atmospheric CO2 level for calibration purposes
 #define ATMOCO2 397.13
 
+#define  MQ135_CALIBARAION_SAMPLE_TIMES  5
+#define  MQ135_CALIBRATION_SAMPLE_INTERVAL  50
+
 class MQ135 {
  private:
   uint8_t _pin;
+  bool _serial;
+  void MQCalibration();
+  float temp1;
+  float RZERO = 263.82;
+  float RZEROc = 263.82;
+
 
  public:
-  MQ135(uint8_t pin);
+  MQ135(uint8_t pin, bool doSerial);
   float getCorrectionFactor(float t, float h);
   float getResistance();
   float getCorrectedResistance(float t, float h);
@@ -57,6 +63,8 @@ class MQ135 {
   float getCorrectedPPM(float t, float h);
   float getRZero();
   float getCorrectedRZero(float t, float h);
-
+  void begin();
+  void MQCalibrationCorrection(float t, float h);
+    
 };
 #endif
