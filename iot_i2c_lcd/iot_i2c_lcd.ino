@@ -1,40 +1,30 @@
-/*
-  MQTT DHT22, when "temperature, c" is sent it returns the temperature in celcius
-  when "humidity" is sent it returns the humidity as measured by the DHT22
-  the signal pin is connected to a pull-ip resistor and GPIO 2
-*/
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include "MQ135.h"
+#include <LiquidCrystal_I2C.h>
 
+#include <Wire.h>
 
-#define PIN_MQ135 A0
-MQ135 mq135_sensor = MQ135(PIN_MQ135, true);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-
-float temperature = 21.0; // assume current temperature. Recommended to measure with DHT22
-float humidity = 25.0; // assume current humidity. Recommended to measure with DHT22
-float resistance ;
-float ppm ;
-float correctedPPM ;
 
 // Update these with values suitable for your network.
 
 const char* ssid = "tan";
 const char* password = "123456789";
 const char* mqtt_server = "192.168.137.139";
-const char* clientID = "NodeMCUDevKit4";
+const char* clientID = "NodeMCUDevKit2";
 
-//outtopic esp8266 mqtt output
-const char* outTopic1 = "co2ppm";
-const char* inTopic1 = "DHT11interval";
-const char* inTopic2 = "inHumi";
-const char* inTopic3 = "inTemp";
+//intopic esp8266 mqtt input
+const char* inTopic = "textMQTT";
 
+
+// Generally, you should use "unsigned long" for variables that hold time
+unsigned long previousMillis = 0;        // will store last temp was read
+const long interval = 1000;              // interval at which to read sensor
+ 
 WiFiClient espClient;
 PubSubClient client(espClient);
-char msg[50];
-//String msg1;
+String msg1, msg2;
 
 void setup_wifi() {
 
@@ -62,30 +52,26 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // Conver the incoming byte array to a string
   payload[length] = '\0'; // Null terminator used to terminate the char array
   String message = (char*)payload;
-
+  
   Serial.print("Message arrived on topic: [");
   Serial.print(topic);// received topic
   Serial.print("], ");
   Serial.println(message); // recived payload
 
-  if (strcmp(topic, inTopic1) == 0) { // strcmp return 0 if true
-    getCO2ppm();
-    Serial.print("\t CO2 PPM: ");
-    Serial.print(correctedPPM);
-    Serial.println("ppm");
-    dtostrf(correctedPPM , 5, 2, msg);
+if(strcmp(topic, inTopic)==0){
+    msg1 = message;
+    lcd.clear();
 
-    //msg1.toCharArray(msg, 50);
-    client.publish(outTopic1, msg);
-  }
-  if (strcmp(topic, inTopic2) == 0) {
+   lcd.print(msg1);
 
-    humidity = message.toFloat();
-  }
-  if (strcmp(topic, inTopic3) == 0) {
+    for(int x=0; x<length; x++)
+    {  
+      if(x>15){
+      lcd.scrollDisplayLeft();
+      }   
+    }    
 
-    temperature = message.toFloat();
-  }
+}
 }
 
 void reconnect() {
@@ -98,9 +84,7 @@ void reconnect() {
       // Once connected, publish an announcement...
       //client.publish(outTopic, clientID);
       // ... and resubscribe
-      client.subscribe(inTopic1);
-      client.subscribe(inTopic2);
-      client.subscribe(inTopic3);
+      client.subscribe(inTopic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -112,11 +96,17 @@ void reconnect() {
 }
 
 void setup() {
-  Serial.begin(74880);
+  Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  mq135_sensor.begin();
+  Wire.begin(D2, D1);
+  lcd.begin();
+  lcd.home();
+  lcd.leftToRight();
+  lcd.cursor();
+  lcd.blink();
+
 
 }
 
@@ -127,11 +117,3 @@ void loop() {
   }
   client.loop();
 }
-
-void getCO2ppm() {
-  mq135_sensor.MQCalibrationCorrection( temperature, humidity);
-  correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-
-}
-
-

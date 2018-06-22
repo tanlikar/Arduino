@@ -22,7 +22,7 @@ float ppm ;
 float correctedPPM ;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   mq135_sensor.begin();
 }
 
