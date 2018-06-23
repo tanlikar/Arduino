@@ -12,7 +12,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 const char* ssid = "tan";
 const char* password = "123456789";
 const char* mqtt_server = "192.168.137.139";
-const char* clientID = "NodeMCUDevKit2";
+const char* clientID = "NodeMCUDevKit6";
 
 //intopic esp8266 mqtt input
 const char* inTopic = "textMQTT";

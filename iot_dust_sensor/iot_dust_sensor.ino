@@ -23,7 +23,7 @@ float dustDensity = 0;
 const char* ssid = "tan";
 const char* password = "123456789";
 const char* mqtt_server = "192.168.137.139";
-const char* clientID = "NodeMCUDevKit2";
+const char* clientID = "NodeMCUDevKit3";
 
 //outtopic esp8266 mqtt output
 const char* outTopic1 = "dustOut";
