@@ -25,6 +25,7 @@ Adafruit_HTU21DF::Adafruit_HTU21DF() {
 
 boolean Adafruit_HTU21DF::begin(void) {
   Wire.begin();
+	
   
   reset();
 
