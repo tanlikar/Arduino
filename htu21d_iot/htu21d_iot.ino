@@ -47,6 +47,7 @@ const char* clientID = "NodeMCUDevKit";
 const char* outTopic1 = "DHT11out"; //nodemcu send out
 const char* outTopic2 = "PMout";
 const char* outTopic3 = "Sgp30out";
+const char* outTopic4 = "T6713out";
 
 //intopic esp8266 mqtt input
 const char* inTopic1 = "DHT11interval"; //nodemcu receive
@@ -62,11 +63,12 @@ char cMsgPM[50];
 
 uint16_t mVoc, mCo2e, Voc_base, eCo2_base;
 String msgSgp30, tempVoc, tempCo2e, tempVoc_base, tempCo2e_base;
-char cMsmSgp30[50];
+char cMsgSgp30[50];
 int counter;
 
 int Co2;
-String cMsgCo2[50];
+String msgCo2;
+char cMsgCo2[50];
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -139,17 +141,17 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
 
     msgSgp30 = tempVoc + " " + tempCo2e + " " + tempVoc_base + " " + tempCo2e_base;
 
-    msgSgp30.toCharArray(cMsmSgp30, 50);
-    client.publish(outTopic3, cMsmSgp30);
+    msgSgp30.toCharArray(cMsgSgp30, 50);
+    client.publish(outTopic3, cMsgSgp30);
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     Co2=t6713.readCO2();
-    
-    msgSgp30 = tempVoc + " " + tempCo2e + " " + tempVoc_base + " " + tempCo2e_base;
 
-    msgSgp30.toCharArray(cMsmSgp30, 50);
-    client.publish(outTopic3, cMsmSgp30);
+    msgCo2 = Co2;
+    
+    msgCo2.toCharArray(cMsgCo2, 50);
+    client.publish(outTopic4, cMsgCo2);
 }
 
 }
