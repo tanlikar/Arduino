@@ -173,11 +173,10 @@ const int ledPin2 = 13;
 int counter = 0;
   int read1;
   int read2;
-  
 //************************************************
 void setup() { 
-  Serial.begin(9600);
-  pinMode(1, INPUT);
+
+  pinMode(8, INPUT);
   pinMode(2, INPUT);
    //Setup pin modes
   pinMode(buzzerPin, OUTPUT);
@@ -189,9 +188,8 @@ void setup() {
 void loop() {
   read1 = digitalRead(2);
   read2 = digitalRead(8);
-    
-  if(read1 == HIGH){
-    read1=LOW;
+
+  while(read1 == HIGH){
     //Play first section
   firstSection();
  
@@ -224,18 +222,18 @@ void loop() {
   beep(a, 650);  
  
   delay(650);
+  read1=0;
   }
 
-  else if(read2 == HIGH){
-    
-  read2=LOW;
+  while(read2 == HIGH){
+  
   for (int i=0;i<203;i++){              //203 is the total number of music notes in the song
   int wait = duration[i] * songspeed;
   tone(buzzer,notes[i],wait);          //tone(pin,frequency,duration)
   delay(wait);}                        //delay is used so it doesn't go to the next loop before tone is finished playing
   //You can click reset on Arduino to replay the song
-   
-    }
+   read2=0;
+  }
  
 }
 

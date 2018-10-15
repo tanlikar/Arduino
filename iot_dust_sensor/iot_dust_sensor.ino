@@ -125,9 +125,9 @@ digitalWrite(ledPower,LOW); // power on the LED
   digitalWrite(ledPower,HIGH); // turn the LED off
   delayMicroseconds(sleepTime);
  
-  // 0 - 5V mapped to 0 - 1023 integer values
+  // 0 - 3.3V mapped to 0 - 1023 integer values
   // recover voltage
-  calcVoltage = voMeasured * (5.0 / 1024);
+  calcVoltage = voMeasured * (3.3 / 1024);
   
  
   // linear eqaution taken from http://www.howmuchsnow.com/arduino/airquality/
