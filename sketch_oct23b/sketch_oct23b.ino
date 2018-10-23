@@ -1,33 +1,16 @@
-/*
-  MQTT DHT22, when "temperature, c" is sent it returns the temperature in celcius
-  when "humidity" is sent it returns the humidity as measured by the DHT22
-  the signal pin is connected to a pull-ip resistor and GPIO 2
-*/
+
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
 
-#include <pm25.h>
-#include <SoftwareSerial.h>
-
 bool debug = true;
 
 HTU21D myHumidity;
-SoftwareSerial pm25_ser(1, 3);
 
 #include "Adafruit_SGP30.h"
 Adafruit_SGP30 sgp;
 
-#include "T6713.h"
-T6713 t6713;
-
-void PM25_listen(){
-  if(!pm25_ser.isListening()){
-    Serial.println(F("[PM25] >> Listening"));
-    pm25_ser.listen();
-  }
-}
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -45,9 +28,7 @@ const char* clientID = "NodeMCUDevKit";
 
 //outtopic esp8266 mqtt output
 const char* outTopic1 = "DHT11out"; //nodemcu send out
-const char* outTopic2 = "PMout";
 const char* outTopic3 = "Sgp30out";
-const char* outTopic4 = "T6713out";
 
 //intopic esp8266 mqtt input
 const char* inTopic1 = "DHT11interval"; //nodemcu receive
@@ -57,21 +38,34 @@ float humidity, temp_c;
 String msgHTU, temp, humi;
 char cMsgHTU[50], cTemp[50], cHumi[50];
 
-uint16_t mPM25,mPM10;
-String msgPM, tempPM25, tempPM10;
-char cMsgPM[50];
-
 uint16_t mVoc, mCo2e, Voc_base, eCo2_base;
 String msgSgp30, tempVoc, tempCo2e, tempVoc_base, tempCo2e_base;
 char cMsgSgp30[50];
 int counter;
 
-int Co2;
-String msgCo2;
-char cMsgCo2[50];
-
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+void getTempHumiReading() {
+
+    humidity = myHumidity.readHumidity();          // Read humidity (percent)
+    temp_c = myHumidity.readTemperature();    // Read temperature as Celcius
+
+   if(debug){
+        Serial.println(temp_c);   
+        Serial.println(humidity);
+    }
+}
+void getSgp30Reading(){
+  
+  sgp.IAQmeasure();
+  mVoc = sgp.TVOC;
+  mCo2e = sgp.eCO2;
+  counter++;
+  if(counter ==30)
+  sgp.getIAQBaseline(&eCo2_base, &Voc_base);
+  
+}
 
 void setup_wifi() {
 
@@ -119,18 +113,6 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
-    getPmReading();
-
-    tempPM25 = String(mPM25);
-    tempPM10 = String(mPM10);
-
-    msgPM = tempPM25 + " " + tempPM10;
-
-    msgPM.toCharArray(cMsgPM, 50);
-    client.publish(outTopic2, cMsgPM);
-}
-
-if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     getSgp30Reading();
 
     tempVoc = String(mVoc);
@@ -142,15 +124,6 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
 
     msgSgp30.toCharArray(cMsgSgp30, 50);
     client.publish(outTopic3, cMsgSgp30);
-}
-
-if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
-    Co2=t6713.readCO2();
-
-    msgCo2 = Co2;
-    
-    msgCo2.toCharArray(cMsgCo2, 50);
-    client.publish(outTopic4, cMsgCo2);
 }
 
 }
@@ -183,15 +156,7 @@ void setup() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
    myHumidity.begin();           // initialize temperature sensor
-
-  pm25_ser.begin(9600);
-  // set uart for pm25, and uart for debug
-  // set listen function if one or more SoftwareSerials are used
-  PM25.init(&pm25_ser, &Serial, PM25_listen);
-  
   sgp.begin();
-  
-  t6713.begin();
 
 }
 
@@ -201,43 +166,6 @@ void loop() {
     reconnect();
   }
   client.loop();
-}
-
-void getTempHumiReading() {
-
-    humidity = myHumidity.readHumidity();          // Read humidity (percent)
-    temp_c = myHumidity.readTemperature();    // Read temperature as Celcius
-
-   if(debug){
-        Serial.println(temp_c);   
-        Serial.println(humidity);
-    }
-}
-
-void getPmReading(){
-
-   mPM25 = PM25.read();
-   mPM10 = PM25.read(PM10_TYPE);
-   
-   if(debug){
-      Serial.print(F("PM2.5 val: ")); 
-      Serial.print(mPM25);
-      Serial.println(F("  ug/m3"));
-      Serial.print(F("PM2.5 val: ")); 
-      Serial.print(mPM10);
-      Serial.println(F("  ug/m3"));
-   }
-}
-
-void getSgp30Reading(){
-  
-  sgp.IAQmeasure();
-  mVoc = sgp.TVOC;
-  mCo2e = sgp.eCO2;
-  counter++;
-  if(counter ==30)
-  sgp.getIAQBaseline(&eCo2_base, &Voc_base);
-  
 }
 
 
