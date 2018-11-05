@@ -19,6 +19,7 @@ public:
   //Public Functions
 	void begin(TwoWire &wirePort = Wire); //If user doesn't specificy then Wire will be used
  	int readCO2();
+ 	void debug(bool input);
 
   //Public Variables
 
@@ -28,5 +29,6 @@ private:
   //Private Variables
 	int data[4];
 	TwoWire *_i2cPort; 
+	bool debug;
 
 };

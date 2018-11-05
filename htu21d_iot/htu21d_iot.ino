@@ -7,20 +7,25 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
-
+#include <EEPROM.h>
 #include <pm25.h>
 #include <SoftwareSerial.h>
 
 bool debug = true;
 
 HTU21D myHumidity;
-SoftwareSerial pm25_ser(1, 3);
+SoftwareSerial pm25_ser(D7, D8);
 
 #include "Adafruit_SGP30.h"
 Adafruit_SGP30 sgp;
 
-#include "T6713.h"
-T6713 t6713;
+#define T6713_Address 0x15 //T6713 i2C Address
+byte data[6];
+int CO2ppmValue;
+const int cmdReadCo2[] = {0x04, 0x13, 0x8B, 0x00, 0x01};
+
+int period = 1000;
+unsigned long time_now = 0;
 
 void PM25_listen(){
   if(!pm25_ser.isListening()){
@@ -40,7 +45,7 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
 
 const char* ssid = "tan";
 const char* password = "123456789";
-const char* mqtt_server = "192.168.0.100";
+const char* mqtt_server = "broker.hivemq.com";
 const char* clientID = "NodeMCUDevKit";
 
 //outtopic esp8266 mqtt output
@@ -48,9 +53,11 @@ const char* outTopic1 = "DHT11out"; //nodemcu send out
 const char* outTopic2 = "PMout";
 const char* outTopic3 = "Sgp30out";
 const char* outTopic4 = "T6713out";
+const char* outTopic5 = "Sgp30baseline";
 
 //intopic esp8266 mqtt input
 const char* inTopic1 = "DHT11interval"; //nodemcu receive
+const char* inTopic2 = "SGPbaseline";
 
  // Values read from sensor
 float humidity, temp_c; 
@@ -64,7 +71,9 @@ char cMsgPM[50];
 uint16_t mVoc, mCo2e, Voc_base, eCo2_base;
 String msgSgp30, tempVoc, tempCo2e, tempVoc_base, tempCo2e_base;
 char cMsgSgp30[50];
-int counter;
+
+String msgSgp30base;
+char cMsgSgp30base[50];
 
 int Co2;
 String msgCo2;
@@ -131,26 +140,33 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
-    getSgp30Reading();
-
+   
     tempVoc = String(mVoc);
     tempCo2e = String(mCo2e);
-    tempVoc_base = String(Voc_base);
-    tempCo2e_base = String(eCo2_base);
 
-    msgSgp30 = tempVoc + " " + tempCo2e + " " + tempVoc_base + " " + tempCo2e_base;
-
+    msgSgp30 = tempVoc + " " + tempCo2e;
     msgSgp30.toCharArray(cMsgSgp30, 50);
     client.publish(outTopic3, cMsgSgp30);
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
-    Co2=t6713.readCO2();
-
-    msgCo2 = Co2;
+    GetCO2PPM();
+    msgCo2 = CO2ppmValue;
     
     msgCo2.toCharArray(cMsgCo2, 50);
     client.publish(outTopic4, cMsgCo2);
+}
+
+if(strcmp(topic,inTopic2)==0){
+
+    sgp30SetBase();
+    tempVoc_base = String(Voc_base);
+    tempCo2e_base = String(eCo2_base);
+
+    msgSgp30base = tempVoc_base + " " + tempCo2e_base;
+    msgSgp30base.toCharArray(cMsgSgp30base, 50);
+    client.publish(outTopic5, cMsgSgp30base);
+    
 }
 
 }
@@ -166,6 +182,7 @@ void reconnect() {
       //client.publish(outTopic, clientID);
       // ... and resubscribe
       client.subscribe(inTopic1);
+      client.subscribe(inTopic2);
       
     } else {
       Serial.print("failed, rc=");
@@ -190,8 +207,11 @@ void setup() {
   PM25.init(&pm25_ser, &Serial, PM25_listen);
   
   sgp.begin();
+  sgp.IAQinit();
+  uint16_t initVOC = EEPROMRead(2);
+  uint16_t initCo2e = EEPROMRead(0);
+  sgp.setIAQBaseline(initCo2e, initVOC); 
   
-  t6713.begin();
 
 }
 
@@ -201,6 +221,11 @@ void loop() {
     reconnect();
   }
   client.loop();
+
+  if(millis()> time_now + period){
+    time_now = millis();
+     getSgp30Reading();
+  }
 }
 
 void getTempHumiReading() {
@@ -208,6 +233,14 @@ void getTempHumiReading() {
     humidity = myHumidity.readHumidity();          // Read humidity (percent)
     temp_c = myHumidity.readTemperature();    // Read temperature as Celcius
 
+    if(humidity > 100 )
+    {
+          humidity = 0;
+    }
+    if(temp_c>100){
+      temp_c = 0;
+    }
+    
    if(debug){
         Serial.println(temp_c);   
         Serial.println(humidity);
@@ -234,12 +267,49 @@ void getSgp30Reading(){
   sgp.IAQmeasure();
   mVoc = sgp.TVOC;
   mCo2e = sgp.eCO2;
-  counter++;
-  if(counter ==30)
-  sgp.getIAQBaseline(&eCo2_base, &Voc_base);
   
 }
 
+void sgp30SetBase(){
+  sgp.getIAQBaseline(&eCo2_base, &Voc_base);
+  EEPROMWrite(2, Voc_base);
+  EEPROMWrite(0, eCo2_base);
+}
+
+void GetCO2PPM()
+{
+ Wire.beginTransmission(T6713_Address);
+ for(int x=0; x<sizeof(cmdReadCo2); x++)
+ {
+    Wire.write(cmdReadCo2[x]);
+  }
+ // end transmission
+ Wire.endTransmission();
+ // read report of current gas measurement in ppm after delay!
+ delay(10);
+ Wire.requestFrom(T6713_Address, 4); // request 4 bytes from slave device
+ data[0] = Wire.read();
+ data[1] = Wire.read();
+ data[2] = Wire.read();
+ data[3] = Wire.read();
+ CO2ppmValue = ((data[2] & 0x3F ) << 8) | data[3];
+}
 
 
+void EEPROMWrite(int address, uint16_t value){
+//one is = MSB, two is LSB
+  byte one = ((value>>8)& 0xFF);
+  byte two = (value & 0xFF);
 
+  EEPROM.write(address, two);
+  EEPROM.write(address +1, one);
+  EEPROM.commit();
+  Serial.println("value saved");
+}
+
+uint16_t EEPROMRead(int address){
+  //read 2 bytes from eeprom memory
+  uint16_t two = EEPROM.read(address);
+  uint16_t one = EEPROM.read(address+1);
+  return ((two<<0)&0xFF)+ ((one<<8)&0xFFFF);
+}
