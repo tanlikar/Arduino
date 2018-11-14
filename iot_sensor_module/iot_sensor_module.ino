@@ -234,7 +234,8 @@ void loop() {
   if(millis()> time_now + period){
     time_now = millis();
      getSgp30Reading();
-
+    
+  }
     if(PM25.loop()){
     mPM25 = PM25.get();
     mPM10 = PM25.get(PM10_TYPE);
@@ -244,7 +245,6 @@ void loop() {
     Serial.print("PM10 val: ");
     Serial.print(mPM10);
     Serial.println("  ug/m3");
-  }
   }
 
     
