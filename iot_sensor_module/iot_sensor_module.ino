@@ -10,6 +10,7 @@
 #include <EEPROM.h>
 #include <pm25.h>
 #include <SoftwareSerial.h>
+#include <math.h>
 
 bool debug = true;
 
@@ -125,6 +126,8 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     msgHTU = temp + " " + humi ;
     msgHTU.toCharArray(cMsgHTU, 50);
     client.publish(outTopic1, cMsgHTU);
+    temp_c = NAN;
+    humidity = NAN;
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
@@ -136,6 +139,8 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
 
     msgPM.toCharArray(cMsgPM, 50);
     client.publish(outTopic2, cMsgPM);
+    mPM25=NAN;
+    mPM10=NAN;
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
@@ -146,6 +151,8 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     msgSgp30 = tempVoc + " " + tempCo2e;
     msgSgp30.toCharArray(cMsgSgp30, 50);
     client.publish(outTopic3, cMsgSgp30);
+    mCo2e=NAN;
+    mVoc=NAN;
 }
 
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
@@ -154,6 +161,7 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     
     msgCo2.toCharArray(cMsgCo2, 50);
     client.publish(outTopic4, cMsgCo2);
+    CO2ppmValue = NAN;
 }
 
 if(strcmp(topic,inTopic2)==0){
@@ -249,10 +257,10 @@ void getTempHumiReading() {
 
     if(humidity > 100 )
     {
-          humidity = 0;
+          humidity = NAN;
     }
     if(temp_c>100){
-      temp_c = 0;
+      temp_c = NAN;
     }
     
    if(debug){
