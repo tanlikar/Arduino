@@ -210,6 +210,8 @@ void DaikinIRESP8266::sendComm(){
     irsend.mark(irEnd);
     irsend.space(0);
 
+    setPower(false);
+
 }
 
 
