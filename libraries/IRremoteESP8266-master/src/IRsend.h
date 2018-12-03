@@ -36,9 +36,9 @@ class IRsend {
                   bool use_modulation = true);
   void begin();
   void enableIROut(uint32_t freq, uint8_t duty = kDutyDefault);
-  VIRTUAL void _delayMicroseconds(uint32_t usec);
-  VIRTUAL uint16_t mark(uint16_t usec);
-  VIRTUAL void space(uint32_t usec);
+  void _delayMicroseconds(uint32_t usec);
+  uint16_t mark(uint16_t usec);
+  void space(uint32_t usec);
   int8_t calibrate(uint16_t hz = 38000U);
   void sendRaw(uint16_t buf[], uint16_t len, uint16_t hz);
   void sendData(uint16_t onemark, uint32_t onespace, uint16_t zeromark,

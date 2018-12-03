@@ -1,10 +1,11 @@
-#include "DaikinIR.h"
+#include "DaikinIRESP8266.h"
 
-daikinIr temp = daikinIr();
+DaikinIRESP8266 temp = DaikinIRESP8266(4);
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  temp.begin();
 }
 
 void loop() {
