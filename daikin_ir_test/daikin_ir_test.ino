@@ -11,7 +11,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   temp.setPower(true);
-  temp.setTemp(26);
+  temp.setTemp(25);
   temp.setFan(MAX);
   temp.setSwingAuto(true);
   temp.sendComm();
