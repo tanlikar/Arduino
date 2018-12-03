@@ -201,54 +201,6 @@ void reconnect() {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-  setup_wifi();
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-   myHumidity.begin();           // initialize temperature sensor
-
-  pm25_ser.begin(9600);
-  // set uart for pm25, and uart for debug
-  // set listen function if one or more SoftwareSerials are used
-  PM25.init(&pm25_ser, &Serial, PM25_listen);
-    // enable auto send, allows auto sampling at 1s interval
-  PM25.enableAutoSend();
-  
-  sgp.begin();
-  sgp.IAQinit();
-  uint16_t initVOC = EEPROMRead(2);
-  uint16_t initCo2e = EEPROMRead(0);
-  sgp.setIAQBaseline(initCo2e, initVOC); 
-  
-
-}
-
-void loop() {
-
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
-  if(millis()> time_now + period){
-    time_now = millis();
-     getSgp30Reading();
-    
-  }
-    if(PM25.loop()){
-    mPM25 = PM25.get();
-    mPM10 = PM25.get(PM10_TYPE);
-    Serial.print("PM2.5 val: ");
-    Serial.print(mPM25);
-    Serial.println("  ug/m3");
-    Serial.print("PM10 val: ");
-    Serial.print(mPM10);
-    Serial.println("  ug/m3");
-  }
-
-    
-}
 
 void getTempHumiReading() {
 
@@ -319,4 +271,53 @@ uint16_t EEPROMRead(int address){
   uint16_t two = EEPROM.read(address);
   uint16_t one = EEPROM.read(address+1);
   return ((two<<0)&0xFF)+ ((one<<8)&0xFFFF);
+}
+
+void setup() {
+  Serial.begin(115200);
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+   myHumidity.begin();           // initialize temperature sensor
+
+  pm25_ser.begin(9600);
+  // set uart for pm25, and uart for debug
+  // set listen function if one or more SoftwareSerials are used
+  PM25.init(&pm25_ser, &Serial, PM25_listen);
+    // enable auto send, allows auto sampling at 1s interval
+  PM25.enableAutoSend();
+  
+  sgp.begin();
+  sgp.IAQinit();
+  uint16_t initVOC = EEPROMRead(2);
+  uint16_t initCo2e = EEPROMRead(0);
+  sgp.setIAQBaseline(initCo2e, initVOC); 
+  
+
+}
+
+void loop() {
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  if(millis()> time_now + period){
+    time_now = millis();
+     getSgp30Reading();
+    
+  }
+    if(PM25.loop()){
+    mPM25 = PM25.get();
+    mPM10 = PM25.get(PM10_TYPE);
+    Serial.print("PM2.5 val: ");
+    Serial.print(mPM25);
+    Serial.println("  ug/m3");
+    Serial.print("PM10 val: ");
+    Serial.print(mPM10);
+    Serial.println("  ug/m3");
+  }
+
+    
 }

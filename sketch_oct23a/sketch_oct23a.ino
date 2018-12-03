@@ -88,7 +88,7 @@ void setup() {
     while (1);
   }
 
- // sgp.IAQinit();
+  sgp.IAQinit();
   Serial.print("Found SGP30 serial #");
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
@@ -97,9 +97,9 @@ void setup() {
 
   // If you have a baseline measurement from before you can assign it to start, to 'self-calibrate'
   //sgp.setIAQBaseline(37426, 37515);
-  //uint16_t initVOC = EEPROMRead(2);
- // uint16_t initCo2e = EEPROMRead(0);
-//sgp.setIAQBaseline(initCo2e, initVOC);  // Will vary for each sensor!
+  uint16_t initVOC = EEPROMRead(2);
+  uint16_t initCo2e = EEPROMRead(0);
+  sgp.setIAQBaseline(initCo2e, initVOC);  // Will vary for each sensor!
   // Serial.println("**** on start eCO2 "+ String(initCo2e)+ " TVOC " + String(initVOC));
 
   Wire.begin(D2, D1);

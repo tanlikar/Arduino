@@ -1,0 +1,9 @@
+DaikinIR KEYWORD1
+
+setSwingAuto KEYWORD2
+setPower KEYWORD2
+setSleep KEYWORD2
+setFan KEYWORD2
+sendComm KEYWORD2
+setTemp KEYWORD2
+init KEYWORD2
