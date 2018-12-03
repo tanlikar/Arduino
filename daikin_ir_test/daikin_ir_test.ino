@@ -1,6 +1,6 @@
 #include "DaikinIRESP8266.h"
 
-DaikinIRESP8266 temp = DaikinIRESP8266(4);
+DaikinIRESP8266 daikin = DaikinIRESP8266(4);
 
 void setup() {
   // put your setup code here, to run once:

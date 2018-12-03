@@ -54,26 +54,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
 if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
   Serial.println((String)inTopic1 + " " + message);
   setPoint = message.toInt();
-  for(int x = 0; x<6; x++){
-    daikin.setTemp(setPoint);
-    daikin.sendComm();
-  }
+  daikin.setTemp(setPoint);
+  daikin.sendComm();
+  delay(500);
 }
 if(strcmp(topic,inTopic3)==0){
   Serial.println((String)inTopic3 + " " + message);
   if(message == "1"){
     daikin.setPower(true);
     daikin.sendComm();
+    delay(500);
   }
 }
 if(strcmp(topic,inTopic4)==0){
   Serial.println((String)inTopic3 + " " + message);
   if(message == "1"){
     setPoint -= 1;
-    for(int x = 0; x<6; x++){
-      daikin.setTemp(setPoint);
-      daikin.sendComm();
-    }
+    daikin.setTemp(setPoint);
+    daikin.sendComm();
+    delay(500);
   }
 }
 
