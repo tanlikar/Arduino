@@ -15,7 +15,7 @@
 
 const unsigned int freq = 38;
 const unsigned int irOne = 1000;
-const unsigned int irZero = 410;
+const unsigned int irZero = 420;
 const unsigned int irspace= 300;
 const unsigned int irHdrHigh = 9770;
 const unsigned int irHdrLow = 9830;
