@@ -14,6 +14,9 @@ const char* inTopic1 = "Ac_controller"; //nodemcu receive
 const char* inTopic2 = "autoPMV";
 const char* inTopic3 = "OnIn";
 const char* inTopic4 = "ControlState";
+const char* inTopic5 = "control1/fanSpeed";
+const char* inTopic6 = "control1/Swing";
+const char* inTopic7 = "control1/sleep";
 
 int setPoint;
 
@@ -67,10 +70,57 @@ if(strcmp(topic,inTopic3)==0){
   }
 }
 if(strcmp(topic,inTopic4)==0){
-  Serial.println((String)inTopic3 + " " + message);
+  Serial.println((String)inTopic4 + " " + message);
   if(message == "1"){
     setPoint -= 1;
     daikin.setTemp(setPoint);
+    daikin.sendComm();
+    delay(500);
+  }
+}
+if(strcmp(topic,inTopic5)==0){
+  Serial.println((String)inTopic5 + " " + message);
+  if(message == "0"){
+    daikin.setFan(MIN);
+    daikin.sendComm();
+  }else if (message == "1"){
+    daikin.setFan(MEDIUM);
+    daikin.sendComm();
+  }else if (message == "2"){
+    daikin.setFan(MAX);
+    daikin.sendComm();
+  }else if (message == "3"){
+    daikin.setFan(TURBO);
+    daikin.sendComm();
+  }else if (message == "4"){
+    daikin.setFan(QUIET);
+    daikin.sendComm();
+  }else if (message == "5"){
+    daikin.setFan(AUTO);
+    daikin.sendComm();
+  }
+   delay(500);
+}
+if(strcmp(topic,inTopic6)==0){
+  Serial.println((String)inTopic6 + " " + message);
+  if(message == "1"){
+    daikin.setSwingAuto(true);
+    daikin.sendComm();
+    delay(500);
+  }else if(message == "0"){
+    daikin.setSwingAuto(false);
+    daikin.sendComm();
+    delay(500);
+  }
+}
+if(strcmp(topic,inTopic7)==0){
+  Serial.println((String)inTopic7 + " " + message);
+  if(message == "1"){
+    daikin.setSleep(true);
+    daikin.sendComm();
+    delay(500);
+  }else if(message == "0"){
+    daikin.setSleep(false);
     daikin.sendComm();
     delay(500);
   }
@@ -92,6 +142,9 @@ void reconnect() {
       client.subscribe(inTopic2);
       client.subscribe(inTopic3);
       client.subscribe(inTopic4);
+      client.subscribe(inTopic5);
+      client.subscribe(inTopic6);
+      client.subscribe(inTopic7);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());

@@ -25,7 +25,6 @@ byte data[6];
 int CO2ppmValue;
 const int cmdReadCo2[] = {0x04, 0x13, 0x8B, 0x00, 0x01};
 const int cmdStartABC[] = {0x05, 0x03, 0xEE, 0xFF, 0x00};
-const int cmdStopABC[] = {0x05, 0x03, 0xEE, 0x00, 0x00};
 
 int period = 1000;
 unsigned long time_now = 0;
@@ -273,41 +272,22 @@ void StartABClogic(){
  delay(10);
 }
 
-void StopABClogic(){
-  Wire.beginTransmission(T6713_Address);
- for(int x=0; x<sizeof(cmdStopABC); x++)
- {
-    Wire.write(cmdStopABC[x]);
-  }
- // end transmission
- Wire.endTransmission();
- // read report of current gas measurement in ppm after delay!
- delay(10);
-}
-
 
 void EEPROMWrite(int address, uint16_t value){
 //one is = MSB, two is LSB
   byte one = ((value>>8)& 0xFF);
   byte two = (value & 0xFF);
 
-  EEPROM.put(address, two);
-  EEPROM.put(address +1, one);
+  EEPROM.write(address, two);
+  EEPROM.write(address +1, one);
   EEPROM.commit();
   Serial.println("value saved");
 }
 
 uint16_t EEPROMRead(int address){
   //read 2 bytes from eeprom memory
-  uint16_t two;
-  EEPROM.get(address, two);
-  uint16_t one;
-  EEPROM.get(address+1, one);
-  
-  Serial.print("two :");
-  Serial.println(two);
-  Serial.print("one :");
-  Serial.println(one);
+  uint16_t two = EEPROM.read(address);
+  uint16_t one = EEPROM.read(address+1);
   return ((two<<0)&0xFF)+ ((one<<8)&0xFFFF);
 }
 
@@ -316,15 +296,15 @@ void setup() {
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-   myHumidity.begin();  // initialize temperature sensor
-   EEPROM.begin(512);
+   myHumidity.begin();           // initialize temperature sensor
 
   pm25_ser.begin(9600);
   // set uart for pm25, and uart for debug
   // set listen function if one or more SoftwareSerials are used
-  PM25.init(&pm25_ser, &Serial, PM25_listen);
+ PM25.init(&pm25_ser, &Serial, PM25_listen);
+ 
     // enable auto send, allows auto sampling at 1s interval
-    if(!PM25.enableAutoSend()){
+    while(!PM25.enableAutoSend()){
       Serial.println("enable fail");
     }
   //PM25.enableAutoSend();
@@ -335,12 +315,7 @@ void setup() {
   sgp.IAQinit();
   uint16_t initVOC = EEPROMRead(2);
   uint16_t initCo2e = EEPROMRead(0);
-  Serial.print("on start " );
-  Serial.print(initVOC);
-  Serial.print(" ");
-  Serial.println(initCo2e);
-  sgp.setIAQBaseline(38732, 38426);
-  //sgp.setIAQBaseline(initCo2e, initVOC); 
+  sgp.setIAQBaseline(initCo2e, initVOC); 
   
 
 }
