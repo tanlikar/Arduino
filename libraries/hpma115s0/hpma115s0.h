@@ -10,7 +10,7 @@
 #endif
 
 #include <SoftwareSerial.h>
-#include <cmath>
+#include <math.h>
 
 typedef enum pm25_sensor_type {
 	PM25_TYPE,

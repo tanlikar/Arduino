@@ -4,7 +4,7 @@ hpma115s0 device = hpma115s0();
 
 void setup() {
   // put your setup code here, to run once:
- if(!device.init()){
+ while(!device.init()){
   Serial.println("init false");
  }
 }

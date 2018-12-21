@@ -339,8 +339,8 @@ void setup() {
   Serial.print(initVOC);
   Serial.print(" ");
   Serial.println(initCo2e);
-  sgp.setIAQBaseline(38732, 38426);
-  //sgp.setIAQBaseline(initCo2e, initVOC); 
+  //sgp.setIAQBaseline(38732, 38426);
+  sgp.setIAQBaseline(initCo2e, initVOC); 
   
 
 }
