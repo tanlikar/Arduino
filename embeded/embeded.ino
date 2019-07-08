@@ -8,7 +8,13 @@
 #include <DHT.h>
 
 #define DHTTYPE DHT11
-#define DHTPIN  2
+#define DHTPIN  14
+#define SOIL A0
+#define RELAY 5
+
+int AnalogInput = 0;
+int threshold = 30;
+bool pumpFlag = false;
 
 // Update these with values suitable for your network.
 
@@ -19,10 +25,13 @@ const char* clientID = "NodeMCUDevKit1";
 
 //outtopic esp8266 mqtt output
 const char* outTopic1 = "DHT11out";
-const char* outTopic2 = "LEDout";
+const char* outTopic2 = "SOIL";
+const char* outTopic3 = "MoistureState";
 
 //intopic esp8266 mqtt input
 const char* inTopic1 = "DHT11interval";
+const char* inTopic2 = "PumpState";
+const char* inTopic3 = "MoistureThreshold";
 
 // Initialize DHT sensor 
 // NOTE: For working with a faster than ATmega328p 16 MHz Arduino chip, like an ESP8266,
@@ -42,8 +51,8 @@ const long interval = 1000;              // interval at which to read sensor
  
 WiFiClient espClient;
 PubSubClient client(espClient);
-String msg1, temp1, humi1;
-char msg[50], temp[50], humi[50];
+String msg1, temp1, humi1, msg4;
+char msg[50], temp[50], humi[50], msgSoil[50];
 
 void setup_wifi() {
 
@@ -89,8 +98,23 @@ if(strcmp(topic,inTopic1)==0){ // strcmp return 0 if true
     msg1 = temp1 + " " + humi1 ;
 
     msg1.toCharArray(msg, 50);
+    msg4 = (String)AnalogInput;
+    msg4.toCharArray(msgSoil,50);
     client.publish(outTopic1, msg);
+    client.publish(outTopic2, msgSoil);
+    //Serial.print(msgSoil);
+
+    
 }
+
+if(strcmp(topic,inTopic2)==0){ // strcmp return 0 if true
+    pumpFlag = true;
+}
+
+if(strcmp(topic,inTopic3)==0){ // strcmp return 0 if true
+    threshold = message.toInt();
+}
+
 }
 
 void reconnect() {
@@ -120,6 +144,7 @@ void setup() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   dht.begin();           // initialize temperature sensor
+  pinMode(RELAY, OUTPUT);
 
 }
 
@@ -129,6 +154,36 @@ void loop() {
     reconnect();
   }
   client.loop();
+
+   unsigned long currentMillis = millis();
+   if(currentMillis - previousMillis >= interval) {
+     previousMillis = currentMillis;   
+     AnalogInput = analogRead(SOIL);
+     //Serial.print(AnalogInput);
+     AnalogInput = map(AnalogInput,1024,398,0,100); //range need to change
+     Serial.print("MOisture reading: ");
+     Serial.println(AnalogInput);
+
+     if(AnalogInput >= threshold){
+      pumpFlag = false;
+      digitalWrite(RELAY, LOW);
+     }
+
+     if(AnalogInput < threshold){
+      digitalWrite(RELAY, HIGH);
+      pumpFlag = true;
+     }
+     Serial.println(pumpFlag);
+
+    /* if(pumpFlag == true){
+      digitalWrite(RELAY, HIGH);
+     }else{
+      digitalWrite(RELAY, LOW);
+     }*/
+     //TODO water now button is wrong, need add another flag for water now button, add another threshold for pump (80%)
+     
+     
+}
 }
 
 void gettemperature() {
